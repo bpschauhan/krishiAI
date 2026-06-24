@@ -1,0 +1,33 @@
+[project]
+name = "krishiai-api"
+version = "0.1.0"
+description = "FastAPI service for KrishiAI."
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi[standard]>=0.115.6",
+  "pydantic-settings>=2.7.0",
+  "psycopg[binary]>=3.2.3",
+  "redis>=5.2.1"
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.13.0",
+  "pytest>=8.3.4",
+  "ruff>=0.8.4"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,1 @@
+"""KrishiAI API package."""

@@ -1,0 +1,24 @@
+{
+  "name": "krishiai",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI-powered agricultural operating system for farmers in Uttar Pradesh, India.",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "docker compose up --build",
+    "dev:detached": "docker compose up --build -d",
+    "dev:down": "docker compose down",
+    "web:dev": "corepack pnpm --filter @krishiai/web dev",
+    "mobile:start": "corepack pnpm --filter @krishiai/mobile start",
+    "api:dev": "cd apps/api && fastapi dev app/main.py --host 0.0.0.0 --port 8000",
+    "typecheck": "corepack pnpm -r typecheck",
+    "lint": "corepack pnpm -r lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

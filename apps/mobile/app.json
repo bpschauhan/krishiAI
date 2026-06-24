@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "KrishiAI",
+    "slug": "krishiai",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "krishiai",
+    "plugins": ["expo-router"],
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.krishiai.mobile"
+    },
+    "android": {
+      "package": "in.krishiai.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#15803d"
+      }
+    },
+    "extra": {
+      "apiBaseUrl": "$EXPO_PUBLIC_API_BASE_URL"
+    }
+  }
+}
