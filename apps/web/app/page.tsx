@@ -1,5 +1,6 @@
 import type { HealthStatus } from "@krishiai/shared-types";
 import { formatServiceStatus } from "@krishiai/shared-utils";
+import { Button } from "@krishiai/ui";
 import { Leaf } from "lucide-react";
 
 const health: HealthStatus = {
@@ -26,9 +27,7 @@ export default function HomePage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            Open dashboard
-          </button>
+          <Button>Open dashboard</Button>
           <p className="text-sm text-muted-foreground">{formatServiceStatus(health)}</p>
         </div>
       </section>

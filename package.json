@@ -16,7 +16,8 @@
     "mobile:start": "corepack pnpm --filter @krishiai/mobile start",
     "api:dev": "cd apps/api && fastapi dev app/main.py --host 0.0.0.0 --port 8000",
     "typecheck": "corepack pnpm -r typecheck",
-    "lint": "corepack pnpm -r lint"
+    "lint": "corepack pnpm -r lint",
+    "build": "corepack pnpm --filter web build"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
