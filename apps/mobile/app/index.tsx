@@ -1,24 +1,11 @@
-import { SafeAreaView, StyleSheet, Text } from "react-native";
+import { router } from "expo-router";
+import { ActionButton, OnboardingScreen } from "./onboarding/ui";
 
 export default function IndexScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>KrishiAI Mobile</Text>
-    </SafeAreaView>
+    <OnboardingScreen eyebrow="KrishiAI Mobile" title="Farmer setup">
+      <ActionButton label="Start onboarding" onPress={() => router.push("/onboarding/language")} />
+      <ActionButton label="Open dashboard" variant="secondary" onPress={() => router.push("/dashboard")} />
+    </OnboardingScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f8fafc",
-    padding: 24
-  },
-  title: {
-    color: "#0f172a",
-    fontSize: 28,
-    fontWeight: "700"
-  }
-});
