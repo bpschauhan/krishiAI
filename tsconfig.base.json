@@ -21,6 +21,7 @@
     "paths": {
       "@krishiai/shared-types": ["packages/shared-types/src"],
       "@krishiai/shared-utils": ["packages/shared-utils/src"],
+      "@krishiai/auth": ["packages/auth/src"],
       "@krishiai/ui": ["packages/ui/src"]
     }
   }

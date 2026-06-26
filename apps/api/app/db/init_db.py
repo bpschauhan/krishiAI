@@ -4,6 +4,7 @@ from app.db.base import Base
 from app.db.session import engine
 from app.models.language import Language
 from app.models.location import District
+from app.services.auth_seed import seed_auth_catalog
 from app.services.seed_data import SUPPORTED_LANGUAGES, UTTAR_PRADESH_DISTRICTS
 
 
@@ -13,6 +14,7 @@ def init_db() -> None:
     with Session(engine) as session:
         seed_languages(session)
         seed_districts(session)
+        seed_auth_catalog(session)
         session.commit()
 
 

@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     )
     REDIS_URL: str = "redis://redis:6379/0"
 
+    CLERK_ISSUER_URL: str | None = None
+    CLERK_JWKS_URL: str | None = None
+    CLERK_JWT_AUDIENCE: str | None = None
+    CLERK_DEFAULT_ROLE_SLUG: str = "farmer"
+    CSRF_TRUSTED_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REQUESTS: int = 120
+    RATE_LIMIT_WINDOW_SECONDS: int = 60
+
     OPENAI_API_KEY: str | None = None
     BHASHINI_API_KEY: str | None = None
     WHATSAPP_TOKEN: str | None = None
@@ -30,6 +39,18 @@ class Settings(BaseSettings):
     @property
     def is_local(self) -> bool:
         return self.APP_ENV == "local"
+
+    @property
+    def clerk_jwks_url(self) -> str | None:
+        if self.CLERK_JWKS_URL:
+            return self.CLERK_JWKS_URL
+        if self.CLERK_ISSUER_URL:
+            return f"{self.CLERK_ISSUER_URL.rstrip('/')}/.well-known/jwks.json"
+        return None
+
+    @property
+    def csrf_trusted_origins(self) -> set[str]:
+        return {origin.strip() for origin in self.CSRF_TRUSTED_ORIGINS.split(",") if origin.strip()}
 
 
 @lru_cache
