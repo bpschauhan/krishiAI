@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { getMe, updateMe } from "../../lib/auth-api";
+import { getMe, updateMe, type ProfileUpdatePayload } from "../../lib/auth-api";
 
 const phonePattern = /^(?:\+91)?[6-9]\d{9}$/;
 
@@ -79,7 +79,7 @@ export function ProfileClient() {
       if (!token) {
         throw new Error("Missing Clerk session token");
       }
-      return updateMe(token, values);
+      return updateMe(token, toProfileUpdatePayload(values));
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["me"], data);
@@ -152,6 +152,18 @@ export function ProfileClient() {
       </section>
     </main>
   );
+}
+
+function toProfileUpdatePayload(values: ProfileForm): ProfileUpdatePayload {
+  return {
+    first_name: values.first_name ?? null,
+    last_name: values.last_name ?? null,
+    display_name: values.display_name ?? null,
+    phone_number: values.phone_number ?? null,
+    preferred_language: values.preferred_language ?? null,
+    district: values.district ?? null,
+    village: values.village ?? null
+  };
 }
 
 function ProfileField({
