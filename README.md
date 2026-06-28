@@ -2,7 +2,7 @@
 
 KrishiAI is a production-grade monorepo foundation for an AI-powered agricultural operating system focused on farmers in Uttar Pradesh, India.
 
-This repository intentionally contains platform scaffolding only. There is no business logic, authentication, or AI workflow implementation yet.
+The current implementation includes the Phase 1 onboarding foundation and Phase 2 authentication and identity layer.
 
 ## Stack
 
@@ -13,6 +13,7 @@ This repository intentionally contains platform scaffolding only. There is no bu
 - Cache: Redis
 - Infrastructure: Docker and Docker Compose
 - Monorepo: pnpm workspaces
+- Auth: Clerk with FastAPI JWT verification, RBAC, and Expo SecureStore session persistence
 
 ## Structure
 
@@ -53,6 +54,18 @@ cp .env.example .env
 
 Docker Compose includes safe local defaults, so the core stack can start without a committed `.env` file.
 
+Authentication requires Clerk configuration:
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+CLERK_ISSUER_URL=https://your-clerk-issuer
+CLERK_JWKS_URL=https://your-clerk-issuer/.well-known/jwks.json
+```
+
+`CLERK_JWT_AUDIENCE` is optional and should match the configured Clerk JWT template audience when one is used.
+
 ## Start Locally
 
 Install JavaScript workspace dependencies:
@@ -74,6 +87,9 @@ Services:
 - API liveness: http://localhost:8000/health/live
 - API readiness: http://localhost:8000/health/ready
 - API version: http://localhost:8000/version
+- Web login: http://localhost:3000/login
+- Web signup: http://localhost:3000/signup
+- Protected dashboard: http://localhost:3000/dashboard
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 
@@ -85,6 +101,16 @@ Expo is usually run outside Docker:
 pnpm mobile:start
 ```
 
+Mobile authentication uses `@clerk/clerk-expo` with `expo-secure-store` token persistence. Set `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` and `EXPO_PUBLIC_API_BASE_URL` in `apps/mobile/.env` before starting Expo. The app scheme is `krishiai`, which enables Expo Router deep linking.
+
+Mobile routes:
+
+- `/login`: email/password login
+- `/signup`: email/password signup with email code verification
+- `/dashboard`: protected dashboard
+- `/profile`: protected editable profile
+- `/onboarding/*`: protected onboarding routes
+
 ## Development Commands
 
 ```bash
@@ -92,6 +118,8 @@ pnpm web:dev
 pnpm api:dev
 pnpm mobile:start
 pnpm typecheck
+pnpm lint
+pnpm build
 ```
 
 For local API development outside Docker:
@@ -104,9 +132,16 @@ pip install -r requirements-dev.txt
 fastapi dev app/main.py --host 0.0.0.0 --port 8000
 ```
 
+Run API tests when Python is available:
+
+```bash
+cd apps/api
+pytest
+```
+
 ## Assumptions
 
 - The initial Docker stack runs web, API, PostGIS, and Redis. Mobile is started with Expo separately.
 - External AI, Bhashini, and WhatsApp credentials are environment placeholders only.
-- Database migrations are not included yet because no domain schema exists.
+- Alembic migrations are present for the Phase 2 authentication and RBAC schema.
 - API readiness currently confirms application readiness, not live database or Redis connectivity.

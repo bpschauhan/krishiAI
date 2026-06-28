@@ -6,6 +6,8 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
     ports:
       - "3000:3000"
     volumes:
@@ -24,6 +26,14 @@ services:
       APP_ENV: ${APP_ENV:-local}
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://krishiai:krishiai_local_password@db:5432/krishiai}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CLERK_ISSUER_URL: ${CLERK_ISSUER_URL:-}
+      CLERK_JWKS_URL: ${CLERK_JWKS_URL:-}
+      CLERK_JWT_AUDIENCE: ${CLERK_JWT_AUDIENCE:-}
+      CLERK_DEFAULT_ROLE_SLUG: ${CLERK_DEFAULT_ROLE_SLUG:-farmer}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-120}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       BHASHINI_API_KEY: ${BHASHINI_API_KEY:-}
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}

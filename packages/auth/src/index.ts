@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 export type RoleSlug =
   | "farmer"
   | "agronomist"
@@ -110,15 +108,12 @@ export function useRouteGuard(
   session: AuthSession,
   requirements: { roles?: string[]; permissions?: string[] } = {}
 ): { isLoading: boolean; isAuthenticated: boolean; isAuthorized: boolean } {
-  return useMemo(
-    () => ({
-      isLoading: !session.isLoaded,
-      isAuthenticated: session.isLoaded && session.isSignedIn,
-      isAuthorized:
-        session.isLoaded && session.isSignedIn
-          ? canAccessRoute(session.user, requirements)
-          : false
-    }),
-    [requirements, session.isLoaded, session.isSignedIn, session.user]
-  );
+  return {
+    isLoading: !session.isLoaded,
+    isAuthenticated: session.isLoaded && session.isSignedIn,
+    isAuthorized:
+      session.isLoaded && session.isSignedIn
+        ? canAccessRoute(session.user, requirements)
+        : false
+  };
 }

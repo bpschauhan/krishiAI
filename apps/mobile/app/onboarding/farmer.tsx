@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { router } from "expo-router";
+import { ProtectedScreen } from "../../components/auth/protected-screen";
 import { ActionButton, ButtonRow, Field, OnboardingScreen } from "./ui";
 
 const phonePattern = /^(?:\+91)?[6-9]\d{9}$/;
@@ -37,40 +38,42 @@ export default function FarmerScreen() {
   }
 
   return (
-    <OnboardingScreen eyebrow="Step 2" title="Farmer Profile">
-      <Field
-        error={errors.fullName}
-        label="Full name"
-        onChangeText={setFullName}
-        placeholder="Ramesh Kumar"
-        value={fullName}
-      />
-      <Field
-        error={errors.phoneNumber}
-        keyboardType="phone-pad"
-        label="Phone number"
-        onChangeText={setPhoneNumber}
-        placeholder="9876543210"
-        value={phoneNumber}
-      />
-      <Field
-        error={errors.village}
-        label="Village"
-        onChangeText={setVillage}
-        placeholder="Village name"
-        value={village}
-      />
-      <Field
-        error={errors.district}
-        label="District"
-        onChangeText={setDistrict}
-        placeholder="Lucknow"
-        value={district}
-      />
-      <ButtonRow>
-        <ActionButton label="Back" variant="secondary" onPress={() => router.back()} />
-        <ActionButton label="Continue" onPress={continueToFarm} />
-      </ButtonRow>
-    </OnboardingScreen>
+    <ProtectedScreen requiredPermissions={["farmers:write"]}>
+      <OnboardingScreen eyebrow="Step 2" title="Farmer Profile">
+        <Field
+          error={errors.fullName}
+          label="Full name"
+          onChangeText={setFullName}
+          placeholder="Ramesh Kumar"
+          value={fullName}
+        />
+        <Field
+          error={errors.phoneNumber}
+          keyboardType="phone-pad"
+          label="Phone number"
+          onChangeText={setPhoneNumber}
+          placeholder="9876543210"
+          value={phoneNumber}
+        />
+        <Field
+          error={errors.village}
+          label="Village"
+          onChangeText={setVillage}
+          placeholder="Village name"
+          value={village}
+        />
+        <Field
+          error={errors.district}
+          label="District"
+          onChangeText={setDistrict}
+          placeholder="Lucknow"
+          value={district}
+        />
+        <ButtonRow>
+          <ActionButton label="Back" variant="secondary" onPress={() => router.back()} />
+          <ActionButton label="Continue" onPress={continueToFarm} />
+        </ButtonRow>
+      </OnboardingScreen>
+    </ProtectedScreen>
   );
 }

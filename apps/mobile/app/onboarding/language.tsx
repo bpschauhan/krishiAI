@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
+import { ProtectedScreen } from "../../components/auth/protected-screen";
 import { ActionButton, OnboardingScreen, styles } from "./ui";
 
 const languages = ["Hindi", "English"];
@@ -18,30 +19,32 @@ export default function LanguageScreen() {
   }
 
   return (
-    <OnboardingScreen eyebrow="Step 1" title="Language">
-      <View style={{ gap: 12 }}>
-        {languages.map((option) => (
-          <Pressable
-            accessibilityRole="button"
-            key={option}
-            onPress={() => {
-              setLanguage(option);
-              setError("");
-            }}
-            style={[
-              styles.input,
-              {
-                justifyContent: "center",
-                borderColor: language === option ? "#15803d" : "#cbd5e1"
-              }
-            ]}
-          >
-            <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "700" }}>{option}</Text>
-          </Pressable>
-        ))}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-      </View>
-      <ActionButton label="Continue" onPress={continueToFarmer} />
-    </OnboardingScreen>
+    <ProtectedScreen requiredPermissions={["farmers:write"]}>
+      <OnboardingScreen eyebrow="Step 1" title="Language">
+        <View style={{ gap: 12 }}>
+          {languages.map((option) => (
+            <Pressable
+              accessibilityRole="button"
+              key={option}
+              onPress={() => {
+                setLanguage(option);
+                setError("");
+              }}
+              style={[
+                styles.input,
+                {
+                  justifyContent: "center",
+                  borderColor: language === option ? "#15803d" : "#cbd5e1"
+                }
+              ]}
+            >
+              <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "700" }}>{option}</Text>
+            </Pressable>
+          ))}
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+        </View>
+        <ActionButton label="Continue" onPress={continueToFarmer} />
+      </OnboardingScreen>
+    </ProtectedScreen>
   );
 }

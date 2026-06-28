@@ -14,6 +14,7 @@ type FieldProps = TextInputProps & {
 };
 
 type ActionButtonProps = {
+  disabled?: boolean;
   label: string;
   onPress: () => void;
   variant?: "primary" | "secondary";
@@ -47,16 +48,18 @@ export function Field({ error, label, ...inputProps }: FieldProps) {
   );
 }
 
-export function ActionButton({ label, onPress, variant = "primary" }: ActionButtonProps) {
+export function ActionButton({ disabled, label, onPress, variant = "primary" }: ActionButtonProps) {
   const isSecondary = variant === "secondary";
 
   return (
     <Pressable
       accessibilityRole="button"
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         isSecondary ? styles.secondaryButton : styles.primaryButton,
+        disabled ? styles.disabled : null,
         pressed ? styles.pressed : null
       ]}
     >
@@ -154,6 +157,9 @@ export const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.78
+  },
+  disabled: {
+    opacity: 0.5
   },
   buttonRow: {
     flexDirection: "row",
