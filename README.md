@@ -14,6 +14,7 @@ The current implementation includes the Phase 1 onboarding foundation and Phase 
 - Infrastructure: Docker and Docker Compose
 - Monorepo: pnpm workspaces
 - Auth: Clerk with FastAPI JWT verification, RBAC, and Expo SecureStore session persistence
+- Geospatial: PostGIS-backed Farm Digital Twin core boundaries and regions
 
 ## Structure
 
@@ -93,6 +94,40 @@ Services:
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 
+## Farm Digital Twin Core
+
+Phase 3A adds backend-first geospatial infrastructure. PostgreSQL runs with PostGIS enabled through `infrastructure/database/init/001_enable_postgis.sql`, and the geospatial Alembic migration also runs `CREATE EXTENSION IF NOT EXISTS postgis` for migrated environments.
+
+Geospatial API routes:
+
+- `POST /api/v1/farm-boundaries`
+- `GET /api/v1/farm-boundaries/{id}`
+- `POST /api/v1/plot-boundaries`
+- `GET /api/v1/plot-boundaries/{id}`
+- `GET /api/v1/geo-regions`
+
+Boundary create requests accept GeoJSON `Polygon`, `Feature`, or single-polygon `FeatureCollection` payloads. The API validates coordinates and calculates square meters, hectares, and acres server-side.
+
+Example:
+
+```json
+{
+  "farm_id": 1,
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [80.9462, 26.8467],
+        [80.9472, 26.8467],
+        [80.9472, 26.8477],
+        [80.9462, 26.8477],
+        [80.9462, 26.8467]
+      ]
+    ]
+  }
+}
+```
+
 ## Mobile
 
 Expo is usually run outside Docker:
@@ -143,5 +178,5 @@ pytest
 
 - The initial Docker stack runs web, API, PostGIS, and Redis. Mobile is started with Expo separately.
 - External AI, Bhashini, and WhatsApp credentials are environment placeholders only.
-- Alembic migrations are present for the Phase 2 authentication and RBAC schema.
+- Alembic migrations are present for the Phase 2 authentication/RBAC schema and Phase 3A geospatial schema.
 - API readiness currently confirms application readiness, not live database or Redis connectivity.
