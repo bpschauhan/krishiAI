@@ -35,6 +35,12 @@ class FarmBoundary(Base):
     area_hectares: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     area_acres: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
 
 class PlotBoundary(Base):
@@ -47,6 +53,12 @@ class PlotBoundary(Base):
     area_hectares: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     area_acres: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
 
 class GeoRegion(Base):
@@ -58,5 +70,11 @@ class GeoRegion(Base):
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("geo_regions.id"), nullable=True, index=True)
     geometry: Mapped[str] = mapped_column(PostGISGeometry("GEOMETRY"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
     parent = relationship("GeoRegion", remote_side=[id])

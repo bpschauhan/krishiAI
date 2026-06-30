@@ -5,6 +5,7 @@ from app.db.session import engine
 from app.models.language import Language
 from app.models.location import District
 from app.services.auth_seed import seed_auth_catalog
+from app.services.region_seed import seed_geo_regions
 from app.services.seed_data import SUPPORTED_LANGUAGES, UTTAR_PRADESH_DISTRICTS
 
 
@@ -15,6 +16,7 @@ def init_db() -> None:
         seed_languages(session)
         seed_districts(session)
         seed_auth_catalog(session)
+        seed_geo_regions(session)
         session.commit()
 
 

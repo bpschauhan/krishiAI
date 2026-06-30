@@ -39,6 +39,18 @@ class FarmBoundaryCreate(BaseModel):
             raise ValueError(str(exc)) from exc
 
 
+class FarmBoundaryUpdate(BaseModel):
+    geometry: GeoJSONInput
+
+    @field_validator("geometry")
+    @classmethod
+    def validate_geometry(cls, value: GeoJSONInput) -> GeoJSONInput:
+        try:
+            return parse_geojson_polygon(value)
+        except GeoJSONValidationError as exc:
+            raise ValueError(str(exc)) from exc
+
+
 class FarmBoundaryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -49,10 +61,23 @@ class FarmBoundaryRead(BaseModel):
     area_hectares: Decimal
     area_acres: Decimal
     created_at: datetime
+    updated_at: datetime
 
 
 class PlotBoundaryCreate(BaseModel):
     plot_id: int = Field(gt=0)
+    geometry: GeoJSONInput
+
+    @field_validator("geometry")
+    @classmethod
+    def validate_geometry(cls, value: GeoJSONInput) -> GeoJSONInput:
+        try:
+            return parse_geojson_polygon(value)
+        except GeoJSONValidationError as exc:
+            raise ValueError(str(exc)) from exc
+
+
+class PlotBoundaryUpdate(BaseModel):
     geometry: GeoJSONInput
 
     @field_validator("geometry")
@@ -74,6 +99,7 @@ class PlotBoundaryRead(BaseModel):
     area_hectares: Decimal
     area_acres: Decimal
     created_at: datetime
+    updated_at: datetime
 
 
 class GeoRegionRead(BaseModel):
@@ -84,3 +110,5 @@ class GeoRegionRead(BaseModel):
     name: str
     parent_id: int | None = None
     geometry: GeoJSONInput
+    created_at: datetime
+    updated_at: datetime

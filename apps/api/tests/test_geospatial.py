@@ -12,9 +12,12 @@ from app.db.session import get_db
 from app.main import create_app
 from app.models.farm import Farm
 from app.models.farmer import Farmer
+from app.models.geospatial import GeoRegion
 from app.models.language import Language
 from app.models.location import District
 from app.models.plot import Plot
+from app.services.region_seed import seed_geo_regions
+from app.services.spatial import boundary_bbox, boundary_contains_point, boundary_intersects, region_lookup
 from app.utils.geo import GeoJSONValidationError, calculate_polygon_area, parse_geojson_polygon
 
 
@@ -34,6 +37,32 @@ POLYGON = {
             [80.9472, 26.8477],
             [80.9462, 26.8477],
             [80.9462, 26.8467],
+        ]
+    ],
+}
+
+LARGER_POLYGON = {
+    "type": "Polygon",
+    "coordinates": [
+        [
+            [80.9462, 26.8467],
+            [80.9482, 26.8467],
+            [80.9482, 26.8487],
+            [80.9462, 26.8487],
+            [80.9462, 26.8467],
+        ]
+    ],
+}
+
+SHIFTED_POLYGON = {
+    "type": "Polygon",
+    "coordinates": [
+        [
+            [80.9470, 26.8470],
+            [80.9490, 26.8470],
+            [80.9490, 26.8490],
+            [80.9470, 26.8490],
+            [80.9470, 26.8470],
         ]
     ],
 }
@@ -139,6 +168,78 @@ def test_create_and_read_farm_and_plot_boundaries() -> None:
     assert plot_get_response.json()["id"] == plot_boundary["id"]
 
 
+def test_update_farm_and_plot_boundaries_replaces_geometry_and_area() -> None:
+    client = build_client()
+
+    farm_response = client.post("/api/v1/farm-boundaries", json={"farm_id": 1, "geometry": POLYGON})
+    farm_boundary = farm_response.json()
+    farm_update = client.put(
+        f"/api/v1/farm-boundaries/{farm_boundary['id']}",
+        json={"geometry": {"type": "Feature", "geometry": LARGER_POLYGON, "properties": {}}},
+    )
+
+    assert farm_update.status_code == 200
+    updated_farm = farm_update.json()
+    assert updated_farm["geometry"]["coordinates"] == LARGER_POLYGON["coordinates"]
+    assert Decimal(updated_farm["area_square_meters"]) > Decimal(farm_boundary["area_square_meters"])
+    assert updated_farm["updated_at"] is not None
+
+    plot_response = client.post("/api/v1/plot-boundaries", json={"plot_id": 1, "geometry": POLYGON})
+    plot_boundary = plot_response.json()
+    plot_update = client.put(
+        f"/api/v1/plot-boundaries/{plot_boundary['id']}",
+        json={"geometry": {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": LARGER_POLYGON}]}},
+    )
+
+    assert plot_update.status_code == 200
+    updated_plot = plot_update.json()
+    assert updated_plot["geometry"]["coordinates"] == LARGER_POLYGON["coordinates"]
+    assert Decimal(updated_plot["area_acres"]) > Decimal(plot_boundary["area_acres"])
+
+
+def test_delete_boundaries_returns_404_after_hard_delete() -> None:
+    client = build_client()
+
+    farm_response = client.post("/api/v1/farm-boundaries", json={"farm_id": 1, "geometry": POLYGON})
+    farm_boundary_id = farm_response.json()["id"]
+    farm_delete = client.delete(f"/api/v1/farm-boundaries/{farm_boundary_id}")
+
+    assert farm_delete.status_code == 204
+    assert client.get(f"/api/v1/farm-boundaries/{farm_boundary_id}").status_code == 404
+    assert client.delete("/api/v1/farm-boundaries/999").status_code == 404
+
+    plot_response = client.post("/api/v1/plot-boundaries", json={"plot_id": 1, "geometry": POLYGON})
+    plot_boundary_id = plot_response.json()["id"]
+    plot_delete = client.delete(f"/api/v1/plot-boundaries/{plot_boundary_id}")
+
+    assert plot_delete.status_code == 204
+    assert client.get(f"/api/v1/plot-boundaries/{plot_boundary_id}").status_code == 404
+    assert client.delete("/api/v1/plot-boundaries/999").status_code == 404
+
+
+def test_list_boundaries_supports_pagination() -> None:
+    client = build_client()
+
+    first = client.post("/api/v1/farm-boundaries", json={"farm_id": 1, "geometry": POLYGON}).json()
+    second = client.post("/api/v1/farm-boundaries", json={"farm_id": 1, "geometry": LARGER_POLYGON}).json()
+    farm_list = client.get("/api/v1/farms/1/boundaries?offset=1&limit=1")
+
+    assert farm_list.status_code == 200
+    assert [item["id"] for item in farm_list.json()] == [second["id"]]
+    assert client.get("/api/v1/farms/999/boundaries").status_code == 404
+
+    first_plot = client.post("/api/v1/plot-boundaries", json={"plot_id": 1, "geometry": POLYGON}).json()
+    second_plot = client.post("/api/v1/plot-boundaries", json={"plot_id": 1, "geometry": LARGER_POLYGON}).json()
+    plot_list = client.get("/api/v1/plots/1/boundaries?offset=0&limit=1")
+
+    assert first["farm_id"] == 1
+    assert first_plot["plot_id"] == 1
+    assert plot_list.status_code == 200
+    assert [item["id"] for item in plot_list.json()] == [first_plot["id"]]
+    assert second_plot["id"] != first_plot["id"]
+    assert client.get("/api/v1/plots/999/boundaries").status_code == 404
+
+
 def test_geo_regions_returns_empty_list() -> None:
     client = build_client()
 
@@ -146,3 +247,41 @@ def test_geo_regions_returns_empty_list() -> None:
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_region_seeding_creates_idempotent_hierarchy() -> None:
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    with TestingSessionLocal() as session:
+        seed_geo_regions(session)
+        seed_geo_regions(session)
+        session.commit()
+
+        regions = session.query(GeoRegion).order_by(GeoRegion.id).all()
+        assert len(regions) == 5
+        assert [region.region_type for region in regions] == ["country", "state", "district", "block", "village"]
+        assert regions[-1].name == "Semra"
+        assert regions[-1].parent_id == regions[-2].id
+
+
+def test_spatial_helpers_handle_bbox_intersection_contains_and_lookup() -> None:
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    assert boundary_bbox(POLYGON) == pytest.approx((80.9462, 26.8467, 80.9472, 26.8477))
+    assert boundary_contains_point(POLYGON, (80.9467, 26.8470))
+    assert not boundary_contains_point(POLYGON, (81.5, 27.5))
+    assert boundary_intersects(POLYGON, SHIFTED_POLYGON)
+    assert not boundary_intersects(POLYGON, {
+        "type": "Polygon",
+        "coordinates": [[[81.0, 27.0], [81.1, 27.0], [81.1, 27.1], [81.0, 27.1], [81.0, 27.0]]],
+    })
+
+    with TestingSessionLocal() as session:
+        seed_geo_regions(session)
+        session.commit()
+        villages = region_lookup(session, (80.94, 26.97), region_type="village")
+
+        assert len(villages) == 1
+        assert villages[0].name == "Semra"
