@@ -60,3 +60,34 @@ The API includes:
 ## Migrations
 
 Alembic is configured in `apps/api`. The Phase 2 auth migration creates identity/RBAC tables and inserts the required system role and permission catalog. It does not create sample users.
+
+## Farm Digital Twin Core
+
+Phase 3A introduces backend geospatial infrastructure only. It does not include weather, satellite intelligence, AI recommendations, or map UI.
+
+PostGIS is enabled in two places:
+
+- Docker database initialization: `infrastructure/database/init/001_enable_postgis.sql`
+- Alembic migration: `202606300001_geospatial_core.py`
+
+Core models:
+
+- `FarmBoundary`: links a farm to a PostGIS polygon and stores calculated square meters, hectares, and acres.
+- `PlotBoundary`: links a plot to a PostGIS polygon and stores calculated square meters, hectares, and acres.
+- `GeoRegion`: stores hierarchical administrative or operational regions with geometry.
+
+GeoJSON handling is centralized in `app.utils.geo`. Accepted inputs are:
+
+- GeoJSON `Polygon`
+- GeoJSON `Feature` with `Polygon` geometry
+- GeoJSON `FeatureCollection` containing exactly one polygon feature
+
+The API validates ring closure, coordinate ranges, numeric coordinates, and polygon shape. Area is calculated server-side from submitted geometry; client-provided area values are ignored.
+
+Geospatial routes are mounted under `/api/v1`:
+
+- `POST /farm-boundaries`
+- `GET /farm-boundaries/{id}`
+- `POST /plot-boundaries`
+- `GET /plot-boundaries/{id}`
+- `GET /geo-regions`
