@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import auth, disease, geospatial, health, onboarding, spatial, version, water, weather
+from app.api.routes import auth, crop_intelligence, disease, geospatial, health, onboarding, spatial, version, water, weather
 
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])
@@ -12,3 +12,4 @@ api_router.include_router(spatial.router, prefix="/api/v1", tags=["spatial"])
 api_router.include_router(weather.router, prefix="/api/v1", tags=["weather"])
 api_router.include_router(disease.router, prefix="/api/v1", tags=["disease-risk"])
 api_router.include_router(water.router, prefix="/api/v1", tags=["water-intelligence"])
+api_router.include_router(crop_intelligence.router, prefix="/api/v1", tags=["crop-intelligence"])

@@ -1,4 +1,5 @@
 from app.models.auth import Permission, PermissionRole, Role, User, UserProfile, UserRole
+from app.models.crop_intelligence import CropCalendar, CropSeason, CropSuitabilityAssessment, CropSuitabilityProfile
 from app.models.disease import Crop, CropDisease, CropStage, DiseaseRiskAssessment
 from app.models.farm import Farm
 from app.models.farmer import Farmer
@@ -11,8 +12,12 @@ from app.models.water import CropWaterProfile, FarmWaterRequirement, WaterAssess
 
 __all__ = [
     "Crop",
+    "CropCalendar",
     "CropDisease",
+    "CropSeason",
     "CropStage",
+    "CropSuitabilityAssessment",
+    "CropSuitabilityProfile",
     "CropWaterProfile",
     "CurrentWeather",
     "DailyForecast",
