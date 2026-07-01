@@ -1,7 +1,7 @@
 """create geospatial core tables
 
 Revision ID: 202606300001
-Revises: 202606260001
+Revises: 202606270001
 Create Date: 2026-06-30 21:22:00.000000
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.types import UserDefinedType
 
 revision: str = "202606300001"
-down_revision: str | None = "202606260001"
+down_revision: str | None = "202606270001"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

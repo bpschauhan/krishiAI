@@ -229,11 +229,11 @@ def test_hourly_daily_and_history_routes_return_provider_data() -> None:
     history = client.get("/api/v1/weather/history?farm_id=1&start_date=2026-06-30&end_date=2026-06-30")
 
     assert hourly.status_code == 200
-    assert hourly.json()["hourly"][0]["forecast_time"] == "2026-07-01T07:00:00Z"
+    assert hourly.json()["hourly"][0]["forecast_time"] == "2026-07-01T07:00:00"
     assert daily.status_code == 200
     assert daily.json()["daily"][0]["forecast_date"] == "2026-07-01"
     assert history.status_code == 200
-    assert history.json()["observations"][0]["observed_at"] == "2026-06-30T06:00:00Z"
+    assert history.json()["observations"][0]["observed_at"] == "2026-06-30T06:00:00"
 
 
 def test_weather_cache_uses_memory_fallback() -> None:

@@ -407,3 +407,227 @@ pytest
 - External AI, Bhashini, and WhatsApp credentials are environment placeholders only.
 - Alembic migrations are present for authentication/RBAC, geospatial, boundary lifecycle, weather foundation, disease risk, water intelligence, and crop intelligence schema.
 - API readiness currently confirms application readiness, not live database or Redis connectivity.
+
+## Features
+
+Krishiai 
+Core Features will be :- 
+
+🌱 Smart Crop Recommendation
+
+Best crop suggestions based on:
+
+Soil
+
+Weather
+
+Water availability
+
+Farm size
+
+Budget
+
+Market demand
+
+
+Shows expected profit, risk, and confidence score.
+
+
+📈 Market Intelligence
+
+Real-time mandi prices
+
+Price trend analysis
+
+Hold vs Sell recommendations
+
+Future price forecasting
+
+
+🌦 Weather Intelligence
+
+Hyperlocal weather forecasts
+
+Rain alerts
+
+Heatwave alerts
+
+Irrigation recommendations
+
+
+🧪 Soil Intelligence
+
+Soil health analysis
+
+NPK recommendations
+
+Fertilizer planning
+
+Organic vs inorganic farming guidance
+
+
+🐛 Disease & Pest Detection
+
+Farmer uploads crop photo
+
+AI identifies disease/pest
+
+Treatment recommendations
+
+Severity assessment
+
+
+🗺 Farm Digital Twin
+
+Digital map of every farm
+
+Field boundaries
+
+Soil layers
+
+Crop history
+
+Water sources
+
+Satellite integration
+
+
+🛰 Satellite Intelligence
+
+Crop health monitoring
+
+NDVI analysis
+
+Water stress detection
+
+Yield estimation
+
+Regional disease prediction
+
+
+🤖 AI Farm Copilot
+
+Farmer can ask:
+
+> Which crop should I grow?
+
+
+
+> Why are my leaves turning yellow?
+
+
+
+> Should I sell now or wait?
+
+
+
+> How much fertilizer should I use?
+
+
+
+And receive answers in their language.
+
+🎙 Voice-First Platform
+
+Hindi support
+
+Regional language support
+
+Voice questions
+
+Voice responses
+
+Works for less literate farmers
+
+
+💬 WhatsApp AI Assistant
+
+Farmers can:
+
+Send messages
+
+Send voice notes
+
+Send crop photos
+
+Receive recommendations
+
+
+No app installation required.
+
+📞 Call-Based AI (IVR)
+
+Farmer calls a number and talks to AI in their language.
+
+💰 Farm Finance Intelligence
+
+Cost estimation
+
+Profit estimation
+
+Loan guidance
+
+Crop insurance recommendations
+
+Financial risk analysis
+
+
+👨‍🌾 Farmer Community Network
+
+Village-level knowledge sharing
+
+Pest outbreak alerts
+
+Local success stories
+
+FPO integration
+
+
+🏛 Government & FPO Dashboard
+
+Regional crop analytics
+
+Farmer insights
+
+Pest monitoring
+
+Water stress monitoring
+
+District-level intelligence
+
+
+📊 Risk Engine
+
+Before recommending any crop, AI calculates:
+
+Expected profit
+
+Best case outcome
+
+Worst case outcome
+
+Risk level
+
+Confidence score
+
+
+🧠 Multi-Agent AI System
+
+Specialized AI agents work together:
+
+Soil Agent
+
+Weather Agent
+
+Crop Agent
+
+Market Agent
+
+Disease Agent
+
+Finance Agent
+
+Sustainability Agent
+
+
+Their outputs are combined to generate the final recommendation.
