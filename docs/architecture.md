@@ -357,3 +357,64 @@ Response shape:
   "status": "Deficit"
 }
 ```
+
+## Crop Intelligence Foundation
+
+Phase 4D introduces a backend-only crop knowledge layer. It can later support recommendation systems, but this phase does not produce crop recommendations, advisory text, treatment plans, AI chat, WhatsApp messages, irrigation schedules, or fertilizer guidance.
+
+Models:
+
+- `CropSeason`: maps a crop to a season name and season type.
+- `CropCalendar`: stores district-specific sowing and harvest windows.
+- `CropSuitabilityProfile`: stores crop-level temperature range, rainfall range, and preferred soil type.
+- `CropSuitabilityAssessment`: stores farm/crop suitability assessment history.
+
+Starter catalog:
+
+- Rice: Kharif.
+- Wheat: Rabi.
+- Potato: Rabi.
+- Sugarcane: Zaid.
+- Maize: Kharif.
+- Mustard: Rabi.
+
+Season logic:
+
+- `Kharif`: June through October.
+- `Rabi`: November through March.
+- `Zaid`: April through May.
+
+Services:
+
+- `SeasonResolver`: resolves the active season from a date.
+- `CropSuitabilityEngine`: scores temperature fit, rainfall fit, and season mapping into a deterministic `0-100` score.
+- `CropIntelligenceService`: orchestrates farm, district, weather, crop profile, season, and response shaping.
+- `CropSuitabilityHistoryService`: persists assessment history.
+
+Suitability methodology:
+
+- Resolve the farm and district.
+- Require an existing farm boundary so the assessment remains tied to the Farm Digital Twin.
+- Read current weather and daily forecast rainfall for the farm weather location.
+- Resolve the active season.
+- Compare temperature and rainfall to the crop suitability profile.
+- Add a season fit component based on the crop season mapping.
+- Persist the assessment and return match booleans plus the score.
+
+APIs are mounted under `/api/v1`:
+
+- `GET /crop-seasons`
+- `GET /crop-calendar?district_id=1`
+- `GET /crop-suitability?farm_id=1&crop_id=1`
+
+Example suitability response:
+
+```json
+{
+  "suitability_score": 100,
+  "season": "Kharif",
+  "weather_match": true,
+  "rainfall_match": true,
+  "temperature_match": true
+}
+```
