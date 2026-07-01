@@ -1,7 +1,9 @@
 import type { HealthStatus } from "@krishiai/shared-types";
 import { formatServiceStatus } from "@krishiai/shared-utils";
-import { Button } from "@krishiai/ui";
+import { buttonVariants } from "@krishiai/ui";
+import { cn } from "@krishiai/shared-utils";
 import { Leaf } from "lucide-react";
+import Link from "next/link";
 
 const health: HealthStatus = {
   status: "ok",
@@ -27,7 +29,9 @@ export default function HomePage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button>Open dashboard</Button>
+          <Link className={cn(buttonVariants())} href="/dashboard">
+            Open dashboard
+          </Link>
           <p className="text-sm text-muted-foreground">{formatServiceStatus(health)}</p>
         </div>
       </section>
