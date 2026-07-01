@@ -23,6 +23,7 @@ export default function DashboardScreen() {
         <Metric label="Farm Count" value="0" />
         <Metric label="Plot Count" value="0" />
         <ActionButton label="Start onboarding" onPress={() => router.push("/onboarding/language")} />
+        <ActionButton label="Digital Twin" variant="secondary" onPress={() => router.push("/dashboard/digital-twin")} />
         <ButtonRow>
           <ActionButton label="Profile" variant="secondary" onPress={() => router.push("/profile")} />
           <ActionButton label="Logout" variant="secondary" onPress={() => void logout()} />

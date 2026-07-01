@@ -15,6 +15,7 @@ The current implementation includes the Phase 1 onboarding foundation and Phase 
 - Monorepo: pnpm workspaces
 - Auth: Clerk with FastAPI JWT verification, RBAC, and Expo SecureStore session persistence
 - Geospatial: PostGIS-backed Farm Digital Twin core boundaries and regions
+- Maps: MapLibre GL for web boundary visualization
 
 ## Structure
 
@@ -91,6 +92,7 @@ Services:
 - Web login: http://localhost:3000/login
 - Web signup: http://localhost:3000/signup
 - Protected dashboard: http://localhost:3000/dashboard
+- Digital Twin viewer: http://localhost:3000/dashboard/digital-twin
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 
@@ -102,8 +104,14 @@ Geospatial API routes:
 
 - `POST /api/v1/farm-boundaries`
 - `GET /api/v1/farm-boundaries/{id}`
+- `PUT /api/v1/farm-boundaries/{id}`
+- `DELETE /api/v1/farm-boundaries/{id}`
+- `GET /api/v1/farms/{farm_id}/boundaries`
 - `POST /api/v1/plot-boundaries`
 - `GET /api/v1/plot-boundaries/{id}`
+- `PUT /api/v1/plot-boundaries/{id}`
+- `DELETE /api/v1/plot-boundaries/{id}`
+- `GET /api/v1/plots/{plot_id}/boundaries`
 - `GET /api/v1/geo-regions`
 
 Boundary create requests accept GeoJSON `Polygon`, `Feature`, or single-polygon `FeatureCollection` payloads. The API validates coordinates and calculates square meters, hectares, and acres server-side.
@@ -128,6 +136,24 @@ Example:
 }
 ```
 
+## Digital Twin Viewer
+
+Phase 3C adds rendering-only farm and plot boundary visualization.
+
+Web:
+
+- `/dashboard/digital-twin` renders farm boundaries and plot boundaries with MapLibre GL.
+- Plot layers render above farm layers.
+- The viewer supports farm and plot ID selectors, boundary visibility toggles, zoom to visible boundaries, empty states, read-only details, and GeoJSON download.
+- Boundary data is loaded from existing APIs only: `GET /api/v1/farms/{farm_id}/boundaries` and `GET /api/v1/plots/{plot_id}/boundaries`.
+
+Mobile:
+
+- `/dashboard/digital-twin` provides a protected read-only Expo viewer.
+- The mobile viewer renders projected GeoJSON polygons with `react-native-svg`, displays boundary details, and shares GeoJSON through the native share sheet.
+
+This phase does not include weather, satellite intelligence, NDVI, analytics, AI recommendations, or boundary editing.
+
 ## Mobile
 
 Expo is usually run outside Docker:
@@ -143,6 +169,7 @@ Mobile routes:
 - `/login`: email/password login
 - `/signup`: email/password signup with email code verification
 - `/dashboard`: protected dashboard
+- `/dashboard/digital-twin`: protected read-only Digital Twin boundary viewer
 - `/profile`: protected editable profile
 - `/onboarding/*`: protected onboarding routes
 

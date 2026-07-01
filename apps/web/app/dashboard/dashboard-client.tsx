@@ -35,6 +35,9 @@ export function DashboardClient() {
             <Button variant="secondary">
               <Link href="/profile">Profile</Link>
             </Button>
+            <Button variant="secondary">
+              <Link href="/dashboard/digital-twin">Digital Twin</Link>
+            </Button>
             <SignOutButton>
               <Button variant="secondary">Logout</Button>
             </SignOutButton>

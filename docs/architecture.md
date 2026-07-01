@@ -88,6 +88,42 @@ Geospatial routes are mounted under `/api/v1`:
 
 - `POST /farm-boundaries`
 - `GET /farm-boundaries/{id}`
+- `PUT /farm-boundaries/{id}`
+- `DELETE /farm-boundaries/{id}`
+- `GET /farms/{farm_id}/boundaries`
 - `POST /plot-boundaries`
 - `GET /plot-boundaries/{id}`
+- `PUT /plot-boundaries/{id}`
+- `DELETE /plot-boundaries/{id}`
+- `GET /plots/{plot_id}/boundaries`
 - `GET /geo-regions`
+
+## Boundary Management And Regions
+
+Phase 3B adds the boundary lifecycle and region infrastructure on top of the Phase 3A geometry foundation.
+
+- Boundary updates replace stored geometry and recalculate area server-side.
+- Boundary deletes are hard deletes for the current lifecycle.
+- Boundary listing APIs expose paginated farm and plot boundary collections.
+- Region seeding is isolated from onboarding seed data and models a country, state, district, block, and village hierarchy with a small Uttar Pradesh example.
+- Backend-only spatial helpers support point containment, intersection checks, bounding boxes, and region lookup.
+
+## Digital Twin Viewer
+
+Phase 3C introduces visualization only. It does not include weather, satellite intelligence, NDVI, analytics, AI recommendations, maps editing, or boundary mutation.
+
+Web viewer:
+
+- The protected route is `/dashboard/digital-twin`.
+- Map rendering uses MapLibre GL with an OpenStreetMap raster style.
+- Farm and plot boundary collections are fetched from `GET /api/v1/farms/{farm_id}/boundaries` and `GET /api/v1/plots/{plot_id}/boundaries`.
+- Farm boundaries render as the lower visual layer; plot boundaries render above them.
+- Shared utilities convert API boundary records into GeoJSON `FeatureCollection` objects, calculate bounds, format area values, and create export payloads.
+- The details panel is read-only and shows owner label, acres, hectares, and last updated timestamp.
+
+Mobile viewer:
+
+- The protected Expo route is `/dashboard/digital-twin`.
+- Mobile consumes the same boundary APIs and shared projection/export helpers.
+- Rendering is read-only using projected GeoJSON polygons via `react-native-svg`.
+- GeoJSON export uses the native share sheet.
