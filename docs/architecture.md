@@ -239,3 +239,58 @@ Example history request:
 ```text
 GET /api/v1/weather/history?farm_id=1&start_date=2026-06-30&end_date=2026-06-30
 ```
+
+## Disease Risk Engine
+
+Phase 4B introduces backend-only disease risk scoring. It does not produce recommendations, treatment plans, crop advice, AI chat, WhatsApp messages, irrigation advice, or fertilizer advice.
+
+Catalog and history models:
+
+- `Crop`: crop name and scientific name.
+- `CropDisease`: diseases attached to a crop, with a severity scale.
+- `CropStage`: crop growth stages attached to a crop.
+- `DiseaseRiskAssessment`: persisted farm/crop/disease score history.
+
+Seed framework:
+
+- Rice: Blast and Brown Spot.
+- Wheat: Rust.
+- Potato: Late Blight.
+- Sugarcane: Red Rot.
+
+Services:
+
+- `DiseaseRuleEngine`: deterministic rule engine that evaluates crop, growth stage, temperature, humidity, and rainfall.
+- `DiseaseRiskService`: orchestrates farm, crop, stage, weather input, disease scoring, and response shaping.
+- `DiseaseRiskHistoryService`: stores one history row per assessed disease.
+
+Risk methodology:
+
+- Base risk starts at 10.
+- Disease-favorable temperature can add up to 30 points.
+- High humidity can add 25 points.
+- Rainfall can add 20 points.
+- Susceptible crop stage can add 15 points.
+- Scores are capped by disease severity scale and normalized to `0-100`.
+
+Risk levels:
+
+- `0-30`: Low.
+- `31-70`: Medium.
+- `71-100`: High.
+
+API:
+
+```text
+GET /api/v1/disease-risk?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Response shape:
+
+```json
+{
+  "risk_score": 85,
+  "risk_level": "High",
+  "disease_results": []
+}
+```

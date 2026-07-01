@@ -2,7 +2,7 @@
 
 KrishiAI is a production-grade monorepo foundation for an AI-powered agricultural operating system focused on farmers in Uttar Pradesh, India.
 
-The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, and the Weather Intelligence Foundation.
+The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, weather intelligence, and disease risk scoring.
 
 ## Stack
 
@@ -229,6 +229,38 @@ Farm -> FarmBoundary -> centroid -> weather lookup
 
 Each response supports temperature, humidity, rainfall, wind speed, pressure, and cloud cover when those values are available from the provider. Results are cached through Redis when available and fall back to in-memory cache otherwise. Fetched data is persisted for the weather data platform.
 
+## Disease Risk Engine
+
+Phase 4B adds deterministic disease risk scoring from crop, growth stage, and weather conditions. It does not include crop recommendations, AI chat, WhatsApp, irrigation advice, fertilizer advice, treatment plans, or advisory text.
+
+Catalog models:
+
+- `Crop`
+- `CropDisease`
+- `CropStage`
+- `DiseaseRiskAssessment`
+
+The seed framework includes an extensible starter disease library:
+
+- Rice: Blast, Brown Spot
+- Wheat: Rust
+- Potato: Late Blight
+- Sugarcane: Red Rot
+
+Risk API:
+
+```text
+GET /api/v1/disease-risk?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Risk levels:
+
+- `0-30`: Low
+- `31-70`: Medium
+- `71-100`: High
+
+The response includes aggregate `risk_score`, `risk_level`, and per-disease results with contributing factors. Assessments are stored in `DiseaseRiskAssessment` for history.
+
 ## Mobile
 
 Expo is usually run outside Docker:
@@ -280,5 +312,5 @@ pytest
 
 - The initial Docker stack runs web, API, PostGIS, and Redis. Mobile is started with Expo separately.
 - External AI, Bhashini, and WhatsApp credentials are environment placeholders only.
-- Alembic migrations are present for authentication/RBAC, geospatial, boundary lifecycle, and weather foundation schema.
+- Alembic migrations are present for authentication/RBAC, geospatial, boundary lifecycle, weather foundation, and disease risk schema.
 - API readiness currently confirms application readiness, not live database or Redis connectivity.
