@@ -154,6 +154,51 @@ Mobile:
 
 This phase does not include weather, satellite intelligence, NDVI, analytics, AI recommendations, or boundary editing.
 
+## Spatial Intelligence Layer
+
+Phase 3D adds backend-only spatial intelligence APIs on top of existing farm, plot, and region boundaries. It does not add weather, satellite imagery, NDVI, AI recommendations, or map editing.
+
+Spatial APIs:
+
+- `POST /api/v1/spatial/point-lookup`
+- `POST /api/v1/spatial/nearby`
+- `GET /api/v1/spatial/intersections`
+- `GET /api/v1/spatial/farm/{farm_id}/regions`
+- `GET /api/v1/spatial/plot/{plot_id}/regions`
+- `POST /api/v1/spatial/bbox-search`
+
+Point lookup example:
+
+```json
+{
+  "longitude": 80.94,
+  "latitude": 26.97
+}
+```
+
+Nearby search example:
+
+```json
+{
+  "longitude": 80.94,
+  "latitude": 26.97,
+  "radius_km": 5
+}
+```
+
+Bounding box search example:
+
+```json
+{
+  "west": 80.91,
+  "south": 26.94,
+  "east": 80.97,
+  "north": 27.0
+}
+```
+
+Responses include matching farm boundaries, plot boundaries, regions, and on-demand spatial metrics: centroid, perimeter, and compactness score. PostgreSQL uses PostGIS operations; tests remain SQLite-compatible through the Python spatial service fallback.
+
 ## Mobile
 
 Expo is usually run outside Docker:
