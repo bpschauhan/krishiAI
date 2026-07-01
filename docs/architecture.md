@@ -127,3 +127,62 @@ Mobile viewer:
 - Mobile consumes the same boundary APIs and shared projection/export helpers.
 - Rendering is read-only using projected GeoJSON polygons via `react-native-svg`.
 - GeoJSON export uses the native share sheet.
+
+## Spatial Intelligence Layer
+
+Phase 3D is backend-only and builds spatial query services on top of stored farm boundaries, plot boundaries, and region geometries. It does not include weather, satellite imagery, NDVI, AI recommendations, analytics, or map editing.
+
+Service layer:
+
+- `point_in_polygon`: checks whether a longitude/latitude falls inside a polygon.
+- `nearest_boundaries`: returns nearby farm boundaries, plot boundaries, and regions inside a radius.
+- `intersecting_boundaries`: finds farm/farm, farm/plot, and plot/plot intersections.
+- `region_resolver`: resolves the country, state, district, block, and village hierarchy for a farm or plot boundary.
+- `bbox_search`: finds boundaries and regions intersecting a submitted bounding box.
+
+PostgreSQL deployments use PostGIS functions such as `ST_Contains`, `ST_DWithin`, `ST_Intersects`, `ST_Centroid`, and `ST_Perimeter`. SQLite test runs use the Python fallback in `app.services.spatial_intelligence`, which reuses existing GeoJSON validation and polygon relation helpers.
+
+Spatial APIs are mounted under `/api/v1/spatial`:
+
+- `POST /point-lookup`: accepts longitude and latitude and returns containing farm boundaries, plot boundaries, and regions.
+- `POST /nearby`: accepts longitude, latitude, and `radius_km`, then returns nearby farms, plots, and regions.
+- `GET /intersections`: returns intersection metadata. Optional `relation_type` supports `farm/farm`, `farm/plot`, and `plot/plot`.
+- `GET /farm/{farm_id}/regions`: resolves the administrative hierarchy for a farm boundary.
+- `GET /plot/{plot_id}/regions`: resolves the administrative hierarchy for a plot boundary.
+- `POST /bbox-search`: accepts `west`, `south`, `east`, and `north`, then returns intersecting farms, plots, and regions.
+
+Spatial metrics are calculated on demand and are not persisted:
+
+- Centroid longitude/latitude.
+- Perimeter in meters.
+- Compactness score, normalized from 0 to 1.
+
+Example point lookup request:
+
+```json
+{
+  "longitude": 80.94,
+  "latitude": 26.97
+}
+```
+
+Example nearby request:
+
+```json
+{
+  "longitude": 80.94,
+  "latitude": 26.97,
+  "radius_km": 5
+}
+```
+
+Example bounding box request:
+
+```json
+{
+  "west": 80.91,
+  "south": 26.94,
+  "east": 80.97,
+  "north": 27.0
+}
+```
