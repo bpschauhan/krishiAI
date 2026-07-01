@@ -2,7 +2,7 @@
 
 KrishiAI is a production-grade monorepo foundation for an AI-powered agricultural operating system focused on farmers in Uttar Pradesh, India.
 
-The current implementation includes the Phase 1 onboarding foundation and Phase 2 authentication and identity layer.
+The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, weather intelligence, and disease risk scoring.
 
 ## Stack
 
@@ -16,6 +16,7 @@ The current implementation includes the Phase 1 onboarding foundation and Phase 
 - Auth: Clerk with FastAPI JWT verification, RBAC, and Expo SecureStore session persistence
 - Geospatial: PostGIS-backed Farm Digital Twin core boundaries and regions
 - Maps: MapLibre GL for web boundary visualization
+- Weather: Open-Meteo provider integration with Redis-backed caching and database persistence
 
 ## Structure
 
@@ -199,6 +200,67 @@ Bounding box search example:
 
 Responses include matching farm boundaries, plot boundaries, regions, and on-demand spatial metrics: centroid, perimeter, and compactness score. PostgreSQL uses PostGIS operations; tests remain SQLite-compatible through the Python spatial service fallback.
 
+## Weather Intelligence Foundation
+
+Phase 4A adds backend-first weather data infrastructure. It does not include AI recommendations, crop advice, disease prediction, irrigation advice, or WhatsApp delivery.
+
+Weather data models:
+
+- `WeatherLocation`
+- `CurrentWeather`
+- `HourlyForecast`
+- `DailyForecast`
+- `WeatherObservation`
+
+The provider layer exposes a `WeatherProvider` interface and an `OpenMeteoProvider` implementation. Route handlers call the weather service only; provider-specific API logic stays out of FastAPI routes.
+
+Weather APIs:
+
+- `GET /api/v1/weather/current?farm_id=1`
+- `GET /api/v1/weather/hourly?farm_id=1&hours=24`
+- `GET /api/v1/weather/daily?farm_id=1&days=7`
+- `GET /api/v1/weather/history?farm_id=1&start_date=2026-06-30&end_date=2026-06-30`
+
+Farm weather resolution uses existing Farm Digital Twin geometry:
+
+```text
+Farm -> FarmBoundary -> centroid -> weather lookup
+```
+
+Each response supports temperature, humidity, rainfall, wind speed, pressure, and cloud cover when those values are available from the provider. Results are cached through Redis when available and fall back to in-memory cache otherwise. Fetched data is persisted for the weather data platform.
+
+## Disease Risk Engine
+
+Phase 4B adds deterministic disease risk scoring from crop, growth stage, and weather conditions. It does not include crop recommendations, AI chat, WhatsApp, irrigation advice, fertilizer advice, treatment plans, or advisory text.
+
+Catalog models:
+
+- `Crop`
+- `CropDisease`
+- `CropStage`
+- `DiseaseRiskAssessment`
+
+The seed framework includes an extensible starter disease library:
+
+- Rice: Blast, Brown Spot
+- Wheat: Rust
+- Potato: Late Blight
+- Sugarcane: Red Rot
+
+Risk API:
+
+```text
+GET /api/v1/disease-risk?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Risk levels:
+
+- `0-30`: Low
+- `31-70`: Medium
+- `71-100`: High
+
+The response includes aggregate `risk_score`, `risk_level`, and per-disease results with contributing factors. Assessments are stored in `DiseaseRiskAssessment` for history.
+
 ## Mobile
 
 Expo is usually run outside Docker:
@@ -250,5 +312,5 @@ pytest
 
 - The initial Docker stack runs web, API, PostGIS, and Redis. Mobile is started with Expo separately.
 - External AI, Bhashini, and WhatsApp credentials are environment placeholders only.
-- Alembic migrations are present for the Phase 2 authentication/RBAC schema and Phase 3A geospatial schema.
+- Alembic migrations are present for authentication/RBAC, geospatial, boundary lifecycle, weather foundation, and disease risk schema.
 - API readiness currently confirms application readiness, not live database or Redis connectivity.
