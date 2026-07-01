@@ -294,3 +294,127 @@ Response shape:
   "disease_results": []
 }
 ```
+
+## Water Intelligence Foundation
+
+Phase 4C introduces backend-only farm water requirement assessment. It estimates crop-stage water demand and compares it with rainfall from the weather data layer. It does not produce irrigation schedules, irrigation recommendations, pump control, crop recommendations, AI advisory, or WhatsApp messages.
+
+Models:
+
+- `CropWaterProfile`: stores crop and stage specific minimum, optimal, and maximum millimeters per day.
+- `FarmWaterRequirement`: stores the latest calculated farm/crop/stage requirement assessment.
+- `WaterAssessmentHistory`: stores immutable historical water assessments.
+
+Seed framework:
+
+- Starter crop-stage profiles exist for Rice, Wheat, Potato, and Sugarcane.
+- Profiles are seeded after the crop catalog so they reference production crop and crop stage rows.
+- The framework is extensible and does not create fake farms, weather, or user data.
+
+Services:
+
+- `WaterRequirementEngine`: calculates estimated requirement, deficit, surplus, and status from a water profile and weather input.
+- `WaterIntelligenceService`: resolves farm, boundary, crop, stage, weather, water profile, and response shaping.
+- `WaterHistoryService`: persists current requirement and history rows.
+
+Farm resolution:
+
+```text
+Farm -> FarmBoundary -> WeatherLocation -> CurrentWeather/DailyForecast -> WaterRequirementEngine
+```
+
+The boundary check ensures farm-level water assessments are tied to the Farm Digital Twin geometry foundation. Weather comes from persisted current weather and daily forecast rows, with the weather service available to hydrate a farm weather location when needed.
+
+Calculation methodology:
+
+- Start with `CropWaterProfile.optimal_mm_per_day`.
+- Increase requirement by 10 percent at or above 30 C.
+- Increase requirement by 20 percent at or above 35 C.
+- Decrease requirement by 10 percent at or below 15 C.
+- Clamp the calculated value to the crop-stage minimum and maximum profile range.
+- Compare the calculated requirement with rainfall.
+
+Status mapping:
+
+- `Adequate`: no meaningful deficit or surplus.
+- `Deficit`: requirement exceeds rainfall by more than 0.10 mm.
+- `Surplus`: rainfall exceeds requirement by more than 0.10 mm.
+
+API:
+
+```text
+GET /api/v1/water-intelligence?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Response shape:
+
+```json
+{
+  "estimated_requirement_mm": "7.70",
+  "rainfall_mm": "2.00",
+  "deficit_mm": "5.70",
+  "surplus_mm": "0.00",
+  "status": "Deficit"
+}
+```
+
+## Crop Intelligence Foundation
+
+Phase 4D introduces a backend-only crop knowledge layer. It can later support recommendation systems, but this phase does not produce crop recommendations, advisory text, treatment plans, AI chat, WhatsApp messages, irrigation schedules, or fertilizer guidance.
+
+Models:
+
+- `CropSeason`: maps a crop to a season name and season type.
+- `CropCalendar`: stores district-specific sowing and harvest windows.
+- `CropSuitabilityProfile`: stores crop-level temperature range, rainfall range, and preferred soil type.
+- `CropSuitabilityAssessment`: stores farm/crop suitability assessment history.
+
+Starter catalog:
+
+- Rice: Kharif.
+- Wheat: Rabi.
+- Potato: Rabi.
+- Sugarcane: Zaid.
+- Maize: Kharif.
+- Mustard: Rabi.
+
+Season logic:
+
+- `Kharif`: June through October.
+- `Rabi`: November through March.
+- `Zaid`: April through May.
+
+Services:
+
+- `SeasonResolver`: resolves the active season from a date.
+- `CropSuitabilityEngine`: scores temperature fit, rainfall fit, and season mapping into a deterministic `0-100` score.
+- `CropIntelligenceService`: orchestrates farm, district, weather, crop profile, season, and response shaping.
+- `CropSuitabilityHistoryService`: persists assessment history.
+
+Suitability methodology:
+
+- Resolve the farm and district.
+- Require an existing farm boundary so the assessment remains tied to the Farm Digital Twin.
+- Read current weather and daily forecast rainfall for the farm weather location.
+- Resolve the active season.
+- Compare temperature and rainfall to the crop suitability profile.
+- Add a season fit component based on the crop season mapping.
+- Persist the assessment and return match booleans plus the score.
+
+APIs are mounted under `/api/v1`:
+
+- `GET /crop-seasons`
+- `GET /crop-calendar?district_id=1`
+- `GET /crop-suitability?farm_id=1&crop_id=1`
+
+Example suitability response:
+
+```json
+{
+  "suitability_score": 100,
+  "season": "Kharif",
+  "weather_match": true,
+  "rainfall_match": true,
+  "temperature_match": true
+}
+```

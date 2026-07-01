@@ -2,7 +2,7 @@
 
 KrishiAI is a production-grade monorepo foundation for an AI-powered agricultural operating system focused on farmers in Uttar Pradesh, India.
 
-The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, weather intelligence, and disease risk scoring.
+The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, weather intelligence, disease risk scoring, water requirement assessment, and crop knowledge scoring.
 
 ## Stack
 
@@ -17,6 +17,8 @@ The current implementation includes onboarding, authentication, Farm Digital Twi
 - Geospatial: PostGIS-backed Farm Digital Twin core boundaries and regions
 - Maps: MapLibre GL for web boundary visualization
 - Weather: Open-Meteo provider integration with Redis-backed caching and database persistence
+- Water: Crop-stage water profiles with farm-level requirement, deficit, and surplus assessment
+- Crop intelligence: Crop seasons, calendars, and suitability scoring without recommendations
 
 ## Structure
 
@@ -261,6 +263,97 @@ Risk levels:
 
 The response includes aggregate `risk_score`, `risk_level`, and per-disease results with contributing factors. Assessments are stored in `DiseaseRiskAssessment` for history.
 
+## Water Intelligence Foundation
+
+Phase 4C adds backend-first water requirement assessment. It measures crop-stage water need against available weather rainfall data. It does not include irrigation schedules, irrigation recommendations, pump control, crop recommendations, AI advisory, or WhatsApp delivery.
+
+Water models:
+
+- `CropWaterProfile`
+- `FarmWaterRequirement`
+- `WaterAssessmentHistory`
+
+The water profile seed framework includes extensible starter profiles for Rice, Wheat, Potato, and Sugarcane, with growth-stage-specific minimum, optimal, and maximum millimeters per day.
+
+Water API:
+
+```text
+GET /api/v1/water-intelligence?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Response shape:
+
+```json
+{
+  "estimated_requirement_mm": "7.70",
+  "rainfall_mm": "2.00",
+  "deficit_mm": "5.70",
+  "surplus_mm": "0.00",
+  "status": "Deficit"
+}
+```
+
+Status levels:
+
+- `Adequate`: rainfall and requirement are balanced within tolerance.
+- `Deficit`: estimated requirement exceeds rainfall.
+- `Surplus`: rainfall exceeds estimated requirement.
+
+Calculation methodology:
+
+```text
+Farm -> FarmBoundary -> WeatherLocation/current weather -> crop water profile -> water assessment
+```
+
+The engine starts from the crop-stage optimal water profile, adjusts for high or low temperature, clamps the result between the profile minimum and maximum, then compares it with rainfall. Results are stored in both the current requirement table and the assessment history table.
+
+## Crop Intelligence Foundation
+
+Phase 4D adds a crop knowledge layer for seasons, calendars, and suitability scoring. It does not include crop recommendations, advisory text, treatment plans, AI chat, WhatsApp delivery, irrigation schedules, or fertilizer guidance.
+
+Crop intelligence models:
+
+- `CropSeason`
+- `CropCalendar`
+- `CropSuitabilityProfile`
+- `CropSuitabilityAssessment`
+
+Starter catalog entries cover Rice, Wheat, Potato, Sugarcane, Maize, and Mustard. Each catalog entry can define a season mapping, temperature range, rainfall range, preferred soil type, and district calendar rows.
+
+Season logic:
+
+- `Kharif`: June through October
+- `Rabi`: November through March
+- `Zaid`: April through May
+
+Crop intelligence APIs:
+
+```text
+GET /api/v1/crop-seasons
+GET /api/v1/crop-calendar?district_id=1
+GET /api/v1/crop-suitability?farm_id=1&crop_id=1
+```
+
+Suitability response shape:
+
+```json
+{
+  "suitability_score": 100,
+  "season": "Kharif",
+  "weather_match": true,
+  "rainfall_match": true,
+  "temperature_match": true
+}
+```
+
+Suitability methodology:
+
+```text
+Farm -> District + WeatherLocation/current weather -> active season -> crop suitability profile -> score
+```
+
+The engine compares observed or forecast weather against crop profile temperature and rainfall ranges, checks whether the crop is mapped to the active season, and returns a deterministic `0-100` suitability score. Assessments are persisted for history only.
+
 ## Mobile
 
 Expo is usually run outside Docker:
@@ -312,5 +405,229 @@ pytest
 
 - The initial Docker stack runs web, API, PostGIS, and Redis. Mobile is started with Expo separately.
 - External AI, Bhashini, and WhatsApp credentials are environment placeholders only.
-- Alembic migrations are present for authentication/RBAC, geospatial, boundary lifecycle, weather foundation, and disease risk schema.
+- Alembic migrations are present for authentication/RBAC, geospatial, boundary lifecycle, weather foundation, disease risk, water intelligence, and crop intelligence schema.
 - API readiness currently confirms application readiness, not live database or Redis connectivity.
+
+## Features
+
+Krishiai 
+Core Features will be :- 
+
+🌱 Smart Crop Recommendation
+
+Best crop suggestions based on:
+
+Soil
+
+Weather
+
+Water availability
+
+Farm size
+
+Budget
+
+Market demand
+
+
+Shows expected profit, risk, and confidence score.
+
+
+📈 Market Intelligence
+
+Real-time mandi prices
+
+Price trend analysis
+
+Hold vs Sell recommendations
+
+Future price forecasting
+
+
+🌦 Weather Intelligence
+
+Hyperlocal weather forecasts
+
+Rain alerts
+
+Heatwave alerts
+
+Irrigation recommendations
+
+
+🧪 Soil Intelligence
+
+Soil health analysis
+
+NPK recommendations
+
+Fertilizer planning
+
+Organic vs inorganic farming guidance
+
+
+🐛 Disease & Pest Detection
+
+Farmer uploads crop photo
+
+AI identifies disease/pest
+
+Treatment recommendations
+
+Severity assessment
+
+
+🗺 Farm Digital Twin
+
+Digital map of every farm
+
+Field boundaries
+
+Soil layers
+
+Crop history
+
+Water sources
+
+Satellite integration
+
+
+🛰 Satellite Intelligence
+
+Crop health monitoring
+
+NDVI analysis
+
+Water stress detection
+
+Yield estimation
+
+Regional disease prediction
+
+
+🤖 AI Farm Copilot
+
+Farmer can ask:
+
+> Which crop should I grow?
+
+
+
+> Why are my leaves turning yellow?
+
+
+
+> Should I sell now or wait?
+
+
+
+> How much fertilizer should I use?
+
+
+
+And receive answers in their language.
+
+🎙 Voice-First Platform
+
+Hindi support
+
+Regional language support
+
+Voice questions
+
+Voice responses
+
+Works for less literate farmers
+
+
+💬 WhatsApp AI Assistant
+
+Farmers can:
+
+Send messages
+
+Send voice notes
+
+Send crop photos
+
+Receive recommendations
+
+
+No app installation required.
+
+📞 Call-Based AI (IVR)
+
+Farmer calls a number and talks to AI in their language.
+
+💰 Farm Finance Intelligence
+
+Cost estimation
+
+Profit estimation
+
+Loan guidance
+
+Crop insurance recommendations
+
+Financial risk analysis
+
+
+👨‍🌾 Farmer Community Network
+
+Village-level knowledge sharing
+
+Pest outbreak alerts
+
+Local success stories
+
+FPO integration
+
+
+🏛 Government & FPO Dashboard
+
+Regional crop analytics
+
+Farmer insights
+
+Pest monitoring
+
+Water stress monitoring
+
+District-level intelligence
+
+
+📊 Risk Engine
+
+Before recommending any crop, AI calculates:
+
+Expected profit
+
+Best case outcome
+
+Worst case outcome
+
+Risk level
+
+Confidence score
+
+
+🧠 Multi-Agent AI System
+
+Specialized AI agents work together:
+
+Soil Agent
+
+Weather Agent
+
+Crop Agent
+
+Market Agent
+
+Disease Agent
+
+Finance Agent
+
+Sustainability Agent
+
+
+Their outputs are combined to generate the final recommendation.

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { assertClerkEnv } from "../lib/clerk-env";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -13,6 +14,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  assertClerkEnv();
+
   return (
     <ClerkProvider>
       <html lang="en-IN">

@@ -5,9 +5,11 @@ from app.db.session import engine
 from app.models.language import Language
 from app.models.location import District
 from app.services.auth_seed import seed_auth_catalog
+from app.services.crop_intelligence_seed import seed_crop_intelligence_catalog
 from app.services.disease_seed import seed_disease_catalog
 from app.services.region_seed import seed_geo_regions
 from app.services.seed_data import SUPPORTED_LANGUAGES, UTTAR_PRADESH_DISTRICTS
+from app.services.water_seed import seed_water_profiles
 
 
 def init_db() -> None:
@@ -19,6 +21,8 @@ def init_db() -> None:
         seed_auth_catalog(session)
         seed_geo_regions(session)
         seed_disease_catalog(session)
+        seed_crop_intelligence_catalog(session)
+        seed_water_profiles(session)
         session.commit()
 
 
