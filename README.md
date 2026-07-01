@@ -2,7 +2,7 @@
 
 KrishiAI is a production-grade monorepo foundation for an AI-powered agricultural operating system focused on farmers in Uttar Pradesh, India.
 
-The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, weather intelligence, and disease risk scoring.
+The current implementation includes onboarding, authentication, Farm Digital Twin infrastructure, spatial intelligence, weather intelligence, disease risk scoring, and water requirement assessment.
 
 ## Stack
 
@@ -17,6 +17,7 @@ The current implementation includes onboarding, authentication, Farm Digital Twi
 - Geospatial: PostGIS-backed Farm Digital Twin core boundaries and regions
 - Maps: MapLibre GL for web boundary visualization
 - Weather: Open-Meteo provider integration with Redis-backed caching and database persistence
+- Water: Crop-stage water profiles with farm-level requirement, deficit, and surplus assessment
 
 ## Structure
 
@@ -260,6 +261,50 @@ Risk levels:
 - `71-100`: High
 
 The response includes aggregate `risk_score`, `risk_level`, and per-disease results with contributing factors. Assessments are stored in `DiseaseRiskAssessment` for history.
+
+## Water Intelligence Foundation
+
+Phase 4C adds backend-first water requirement assessment. It measures crop-stage water need against available weather rainfall data. It does not include irrigation schedules, irrigation recommendations, pump control, crop recommendations, AI advisory, or WhatsApp delivery.
+
+Water models:
+
+- `CropWaterProfile`
+- `FarmWaterRequirement`
+- `WaterAssessmentHistory`
+
+The water profile seed framework includes extensible starter profiles for Rice, Wheat, Potato, and Sugarcane, with growth-stage-specific minimum, optimal, and maximum millimeters per day.
+
+Water API:
+
+```text
+GET /api/v1/water-intelligence?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Response shape:
+
+```json
+{
+  "estimated_requirement_mm": "7.70",
+  "rainfall_mm": "2.00",
+  "deficit_mm": "5.70",
+  "surplus_mm": "0.00",
+  "status": "Deficit"
+}
+```
+
+Status levels:
+
+- `Adequate`: rainfall and requirement are balanced within tolerance.
+- `Deficit`: estimated requirement exceeds rainfall.
+- `Surplus`: rainfall exceeds estimated requirement.
+
+Calculation methodology:
+
+```text
+Farm -> FarmBoundary -> WeatherLocation/current weather -> crop water profile -> water assessment
+```
+
+The engine starts from the crop-stage optimal water profile, adjusts for high or low temperature, clamps the result between the profile minimum and maximum, then compares it with rainfall. Results are stored in both the current requirement table and the assessment history table.
 
 ## Mobile
 

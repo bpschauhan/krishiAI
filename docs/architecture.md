@@ -294,3 +294,66 @@ Response shape:
   "disease_results": []
 }
 ```
+
+## Water Intelligence Foundation
+
+Phase 4C introduces backend-only farm water requirement assessment. It estimates crop-stage water demand and compares it with rainfall from the weather data layer. It does not produce irrigation schedules, irrigation recommendations, pump control, crop recommendations, AI advisory, or WhatsApp messages.
+
+Models:
+
+- `CropWaterProfile`: stores crop and stage specific minimum, optimal, and maximum millimeters per day.
+- `FarmWaterRequirement`: stores the latest calculated farm/crop/stage requirement assessment.
+- `WaterAssessmentHistory`: stores immutable historical water assessments.
+
+Seed framework:
+
+- Starter crop-stage profiles exist for Rice, Wheat, Potato, and Sugarcane.
+- Profiles are seeded after the crop catalog so they reference production crop and crop stage rows.
+- The framework is extensible and does not create fake farms, weather, or user data.
+
+Services:
+
+- `WaterRequirementEngine`: calculates estimated requirement, deficit, surplus, and status from a water profile and weather input.
+- `WaterIntelligenceService`: resolves farm, boundary, crop, stage, weather, water profile, and response shaping.
+- `WaterHistoryService`: persists current requirement and history rows.
+
+Farm resolution:
+
+```text
+Farm -> FarmBoundary -> WeatherLocation -> CurrentWeather/DailyForecast -> WaterRequirementEngine
+```
+
+The boundary check ensures farm-level water assessments are tied to the Farm Digital Twin geometry foundation. Weather comes from persisted current weather and daily forecast rows, with the weather service available to hydrate a farm weather location when needed.
+
+Calculation methodology:
+
+- Start with `CropWaterProfile.optimal_mm_per_day`.
+- Increase requirement by 10 percent at or above 30 C.
+- Increase requirement by 20 percent at or above 35 C.
+- Decrease requirement by 10 percent at or below 15 C.
+- Clamp the calculated value to the crop-stage minimum and maximum profile range.
+- Compare the calculated requirement with rainfall.
+
+Status mapping:
+
+- `Adequate`: no meaningful deficit or surplus.
+- `Deficit`: requirement exceeds rainfall by more than 0.10 mm.
+- `Surplus`: rainfall exceeds requirement by more than 0.10 mm.
+
+API:
+
+```text
+GET /api/v1/water-intelligence?farm_id=1&crop_id=1&crop_stage_id=1
+```
+
+Response shape:
+
+```json
+{
+  "estimated_requirement_mm": "7.70",
+  "rainfall_mm": "2.00",
+  "deficit_mm": "5.70",
+  "surplus_mm": "0.00",
+  "status": "Deficit"
+}
+```
