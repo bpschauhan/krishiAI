@@ -186,3 +186,56 @@ Example bounding box request:
   "north": 27.0
 }
 ```
+
+## Weather Intelligence Foundation
+
+Phase 4A is backend-first weather data infrastructure. It does not include AI recommendations, crop advice, disease prediction, irrigation advice, WhatsApp, or advisory workflows.
+
+Weather persistence models:
+
+- `WeatherLocation`: stores farm-derived or coordinate-derived lookup locations.
+- `CurrentWeather`: stores current provider observations.
+- `HourlyForecast`: stores hourly forecast rows.
+- `DailyForecast`: stores daily forecast rows.
+- `WeatherObservation`: stores historical weather observations.
+
+All weather records support the core weather fields where available:
+
+- Temperature.
+- Humidity.
+- Rainfall.
+- Wind speed.
+- Pressure.
+- Cloud cover.
+
+Provider layer:
+
+- `WeatherProvider` defines current weather, hourly forecast, daily forecast, and historical weather methods.
+- `OpenMeteoProvider` implements the provider contract.
+- FastAPI routes do not contain provider-specific request or parsing logic.
+
+Weather service:
+
+- Resolves farm weather through `Farm -> FarmBoundary -> centroid -> provider lookup`.
+- Persists fetched provider results into weather tables.
+- Uses Redis cache when reachable and an in-memory fallback otherwise.
+- Provides reusable sync methods for current weather and forecasts; no scheduler is installed in Phase 4A.
+
+Weather APIs are mounted under `/api/v1/weather`:
+
+- `GET /current`: accepts `farm_id` or coordinates and returns current weather.
+- `GET /hourly`: accepts `farm_id` or coordinates plus `hours`.
+- `GET /daily`: accepts `farm_id` or coordinates plus `days`.
+- `GET /history`: accepts `farm_id` or coordinates plus optional `start_date` and `end_date`.
+
+Example current weather request:
+
+```text
+GET /api/v1/weather/current?farm_id=1
+```
+
+Example history request:
+
+```text
+GET /api/v1/weather/history?farm_id=1&start_date=2026-06-30&end_date=2026-06-30
+```
